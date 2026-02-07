@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Journal</title>
+    <title>My Story Trade - Advanced Ledger</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,23 +11,27 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
     <style>
-        body { margin: 0; background-color: #FDFDFF; }
+        body { margin: 0; background-color: #FDFDFF; font-family: sans-serif; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
-        // Mengambil fungsi dari library yang sudah di-load di atas
+        // Persiapan Alat & Library
         const { useState, useEffect, useMemo, useRef } = React;
         const { AreaChart, Area, BarChart, Bar, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ScatterChart, Scatter, ZAxis, Legend } = Recharts;
-        const { Plus, LayoutGrid, Calendar, Trash2, TrendingUp, ArrowDownRight, Target, BarChart3, X, Edit2, Activity, CheckSquare, Square, ChevronDown, ImageIcon, ExternalLink, Upload, BrainCircuit, Filter, PieChart: PieChartIcon, Download, Maximize2, LineChart, FileSpreadsheet } = lucide;
+        const { 
+            Plus, LayoutGrid, Calendar, Trash2, TrendingUp, ArrowDownRight, 
+            Target, BarChart3, X, Edit2, Activity, CheckSquare, Square, 
+            ChevronDown, ImageIcon, ExternalLink, Upload, BrainCircuit, 
+            Filter, Download, Maximize2, LineChart, FileSpreadsheet 
+        } = lucide;
 
-        // --- PASTE KODE LO DI BAWAH INI ---
-        // INGAT: MULAI DARI "const StatBox = ..."
-        // JANGAN MASUKKIN BARIS "import..." TADI!
-
+        // --- UI SUPPORT COMPONENTS ---
         const StatBox = ({ label, value, subtext, icon: Icon, isPrimary = false, isEditable = false, inputValue, onInputChange, prefix = "", suffix = "" }) => (
-          <div className={`relative rounded-[2.5rem] p-6 transition-all duration-300 hover:shadow-xl ${isPrimary ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white' : 'bg-white text-slate-800 border border-slate-100'}`}>
+          <div className={`relative rounded-[2.5rem] p-6 transition-all duration-300 hover:shadow-xl ${isPrimary ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-lg' : 'bg-white text-slate-800 shadow-sm border border-slate-100'}`}>
             <div className="flex justify-between items-start mb-4">
               <div className={`p-2 rounded-xl ${isPrimary ? 'bg-white/20' : 'bg-purple-50 text-purple-600'}`}><Icon size={20} /></div>
               {isEditable && <div className={`p-1.5 rounded-lg ${isPrimary ? 'bg-white/10' : 'bg-slate-50'}`}><Edit2 size={14} /></div>}
@@ -37,26 +41,169 @@
               {isEditable ? (
                 <div className="flex items-center gap-1">
                   {prefix && <span className="text-2xl font-black">{prefix}</span>}
-                  <input type="number" value={inputValue === 0 ? '' : inputValue} onChange={(e) => onInputChange(e.target.value === '' ? 0 : parseFloat(e.target.value))} className="w-full bg-transparent text-2xl font-black outline-none border-none p-0" />
+                  <input type="number" value={inputValue === 0 ? '' : inputValue} onChange={(e) => onInputChange(parseFloat(e.target.value) || 0)} className="w-full bg-transparent text-2xl font-black outline-none border-none p-0" />
                   {suffix && <span className="text-2xl font-black">{suffix}</span>}
                 </div>
               ) : <h3 className="text-2xl font-black tracking-tight">{value}</h3>}
-              <p className="text-[10px] font-bold opacity-60">{subtext}</p>
+              <p className="text-[10px] font-bold opacity-60 uppercase">{subtext}</p>
             </div>
           </div>
         );
 
-        // ... PASTE SISA KODE LO SAMPAI PALING BAWAH (Fungsi App) ...
-        // Gue bantu singkat, tapi lo masukin semua punya lo ya!
+        const ChartCard = ({ title, children, icon: Icon, dateRange, setDateRange }) => (
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 h-full flex flex-col">
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Icon size={18} /></div>
+                <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-700">{title}</h3>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[250px] w-full">{children}</div>
+          </div>
+        );
 
-        function App() {
-            // (Isi semua logic App lo di sini)
+        const CustomDashboardTooltip = ({ active, payload }) => {
+          if (active && payload && payload.length) {
+            const data = payload[0].payload;
             return (
-                <div className="min-h-screen bg-[#FDFDFF] pb-20">
-                   <h1 className="text-center pt-10 text-4xl font-black text-purple-600">My Story Trade</h1>
-                   {/* Tambahkan sisa JSX lo di sini */}
-                </div>
+              <div className="bg-white p-4 rounded-3xl shadow-2xl border border-slate-50">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">{data.date || data.name}</p>
+                {payload.map((entry, i) => (
+                  <div key={i} className="flex justify-between gap-4">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">{entry.name}:</span>
+                    <span className="text-[10px] font-black" style={{color: entry.color}}>${entry.value.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
             );
+          }
+          return null;
+        };
+
+        // --- MAIN APPLICATION ---
+        function App() {
+          const [trades, setTrades] = useState(() => JSON.parse(localStorage.getItem('mst_trades') || '[]'));
+          const [initialBalance, setInitialBalance] = useState(1000);
+          const [riskPercent, setRiskPercent] = useState(1);
+          const [isModalOpen, setIsModalOpen] = useState(false);
+          const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], pnl: '', outcome: 'WIN', pair: 'BTCUSD', strategy: 'SMC', emotion: 'Confident' });
+
+          useEffect(() => { localStorage.setItem('mst_trades', JSON.stringify(trades)); }, [trades]);
+
+          const summaryStats = useMemo(() => {
+            const netPnl = trades.reduce((acc, t) => acc + (parseFloat(t.pnl) || 0), 0);
+            return { netPnl, currentBalance: initialBalance + netPnl, riskUsd: (initialBalance * riskPercent) / 100 };
+          }, [trades, initialBalance, riskPercent]);
+
+          const growthData = useMemo(() => {
+            let balance = initialBalance;
+            return [{ name: 'Start', balance }, ...trades.map(t => ({ name: t.date, balance: balance += parseFloat(t.pnl) }))];
+          }, [trades, initialBalance]);
+
+          const handleSave = (e) => {
+            e.preventDefault();
+            const val = formData.outcome === 'LOSS' ? -Math.abs(formData.pnl) : Math.abs(formData.pnl);
+            setTrades([{ ...formData, pnl: val, id: Date.now() }, ...trades]);
+            setIsModalOpen(false);
+          };
+
+          return (
+            <div className="min-h-screen bg-[#FDFDFF] pb-20">
+              <div className="h-[350px] bg-[#7C3AED] absolute top-0 left-0 right-0 z-0 rounded-b-[5rem] shadow-xl"></div>
+              
+              <div className="relative z-10 container mx-auto px-6 pt-12">
+                <header className="text-center mb-12 text-white">
+                  <h1 className="text-5xl font-black tracking-tighter">My Story Trade</h1>
+                  <p className="opacity-60 text-sm font-bold uppercase tracking-widest mt-2">Ledger Intelligence</p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                  <StatBox label="Base Balance" prefix="$" inputValue={initialBalance} onInputChange={setInitialBalance} icon={Target} isPrimary isEditable />
+                  <StatBox label="Risk per Trade" suffix="%" inputValue={riskPercent} onInputChange={setRiskPercent} icon={BarChart3} isPrimary isEditable />
+                  <StatBox label="Risk in USD" value={`$${summaryStats.riskUsd}`} icon={TrendingUp} isPrimary />
+                  <StatBox label="Current Equity" value={`$${summaryStats.currentBalance}`} icon={Activity} />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                  <ChartCard title="Growth Curve" icon={TrendingUp}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={growthData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" hide />
+                        <YAxis hide domain={['auto', 'auto']} />
+                        <Tooltip content={<CustomDashboardTooltip />} />
+                        <Area type="monotone" dataKey="balance" stroke="#7C3AED" strokeWidth={4} fill="#7C3AED20" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartCard>
+                  <ChartCard title="Win Rate" icon={Target}>
+                    <div className="flex flex-col items-center justify-center h-full">
+                       <h2 className="text-6xl font-black text-purple-600">
+                        {trades.length ? Math.round((trades.filter(t => t.outcome === 'WIN').length / trades.length) * 100) : 0}%
+                       </h2>
+                       <p className="font-bold text-slate-400 uppercase tracking-widest mt-2">Accuracy Rate</p>
+                    </div>
+                  </ChartCard>
+                </div>
+
+                <div className="flex justify-center mb-12">
+                  <button onClick={() => setIsModalOpen(true)} className="bg-[#7C3AED] text-white px-12 py-6 rounded-[2.5rem] font-black text-xl shadow-2xl hover:scale-105 transition-transform">
+                    + RECORD NEW TRADE
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <th className="p-8">Date</th>
+                        <th className="p-8">Asset</th>
+                        <th className="p-8">Outcome</th>
+                        <th className="p-8 text-right">Profit/Loss</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {trades.map(t => (
+                        <tr key={t.id} className="hover:bg-slate-50/50">
+                          <td className="p-8 text-xs font-bold text-slate-500 uppercase">{t.date}</td>
+                          <td className="p-8 font-black text-slate-800">{t.pair}</td>
+                          <td className="p-8">
+                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black text-white ${t.outcome === 'WIN' ? 'bg-emerald-500' : 'bg-rose-500'}`}>{t.outcome}</span>
+                          </td>
+                          <td className={`p-8 text-right font-black ${t.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {t.pnl >= 0 ? '+' : ''}${t.pnl}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {isModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+                  <div className="bg-white rounded-[3rem] w-full max-w-lg overflow-hidden shadow-2xl">
+                    <div className="p-8 bg-purple-600 text-white flex justify-between items-center">
+                      <h2 className="font-black text-xl uppercase">New Entry</h2>
+                      <button onClick={() => setIsModalOpen(false)}><X /></button>
+                    </div>
+                    <form onSubmit={handleSave} className="p-8 space-y-4">
+                      <input type="date" className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+                      <input type="text" placeholder="Pair (e.g. XAUUSD)" className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold" value={formData.pair} onChange={e => setFormData({...formData, pair: e.target.value})} />
+                      <div className="flex gap-4">
+                        <select className="flex-1 p-4 bg-slate-50 rounded-2xl border-none font-bold text-purple-600" value={formData.outcome} onChange={e => setFormData({...formData, outcome: e.target.value})}>
+                          <option value="WIN">WIN</option>
+                          <option value="LOSS">LOSS</option>
+                        </select>
+                        <input type="number" placeholder="Amount ($)" className="flex-1 p-4 bg-slate-50 rounded-2xl border-none font-bold" value={formData.pnl} onChange={e => setFormData({...formData, pnl: e.target.value})} />
+                      </div>
+                      <button type="submit" className="w-full py-5 bg-purple-600 text-white rounded-2xl font-black uppercase tracking-widest mt-4">Save Trade</button>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
