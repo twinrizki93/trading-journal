@@ -3,25 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Journal - My Story Trade</title>
+    <title>Trading Journal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    <style>
+        body { margin: 0; background-color: #FDFDFF; }
+    </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
+        // Mengambil fungsi dari library yang sudah di-load di atas
         const { useState, useEffect, useMemo, useRef } = React;
         const { AreaChart, Area, BarChart, Bar, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ScatterChart, Scatter, ZAxis, Legend } = Recharts;
         const { Plus, LayoutGrid, Calendar, Trash2, TrendingUp, ArrowDownRight, Target, BarChart3, X, Edit2, Activity, CheckSquare, Square, ChevronDown, ImageIcon, ExternalLink, Upload, BrainCircuit, Filter, PieChart: PieChartIcon, Download, Maximize2, LineChart, FileSpreadsheet } = lucide;
 
-        // --- PASTE KODE DARI GEMINI CANVAS DI BAWAH INI ---
-        // (Pastikan kamu sudah hapus baris "import" yang ada di paling atas kode aslimu)
+        // --- PASTE KODE LO DI BAWAH INI ---
+        // INGAT: MULAI DARI "const StatBox = ..."
+        // JANGAN MASUKKIN BARIS "import..." TADI!
 
-        // [MASUKKAN KODE KAMU DISINI - MULAI DARI const StatBox = ... SAMPAI SELESAI]
+        const StatBox = ({ label, value, subtext, icon: Icon, isPrimary = false, isEditable = false, inputValue, onInputChange, prefix = "", suffix = "" }) => (
+          <div className={`relative rounded-[2.5rem] p-6 transition-all duration-300 hover:shadow-xl ${isPrimary ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white' : 'bg-white text-slate-800 border border-slate-100'}`}>
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-2 rounded-xl ${isPrimary ? 'bg-white/20' : 'bg-purple-50 text-purple-600'}`}><Icon size={20} /></div>
+              {isEditable && <div className={`p-1.5 rounded-lg ${isPrimary ? 'bg-white/10' : 'bg-slate-50'}`}><Edit2 size={14} /></div>}
+            </div>
+            <div className="space-y-1">
+              <p className={`text-[10px] font-bold uppercase tracking-widest ${isPrimary ? 'text-white/60' : 'text-slate-400'}`}>{label}</p>
+              {isEditable ? (
+                <div className="flex items-center gap-1">
+                  {prefix && <span className="text-2xl font-black">{prefix}</span>}
+                  <input type="number" value={inputValue === 0 ? '' : inputValue} onChange={(e) => onInputChange(e.target.value === '' ? 0 : parseFloat(e.target.value))} className="w-full bg-transparent text-2xl font-black outline-none border-none p-0" />
+                  {suffix && <span className="text-2xl font-black">{suffix}</span>}
+                </div>
+              ) : <h3 className="text-2xl font-black tracking-tight">{value}</h3>}
+              <p className="text-[10px] font-bold opacity-60">{subtext}</p>
+            </div>
+          </div>
+        );
+
+        // ... PASTE SISA KODE LO SAMPAI PALING BAWAH (Fungsi App) ...
+        // Gue bantu singkat, tapi lo masukin semua punya lo ya!
+
+        function App() {
+            // (Isi semua logic App lo di sini)
+            return (
+                <div className="min-h-screen bg-[#FDFDFF] pb-20">
+                   <h1 className="text-center pt-10 text-4xl font-black text-purple-600">My Story Trade</h1>
+                   {/* Tambahkan sisa JSX lo di sini */}
+                </div>
+            );
+        }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
